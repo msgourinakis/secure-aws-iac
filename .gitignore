@@ -1,0 +1,21 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+.terraform.lock.hcl
+*.tfvars
+!example.tfvars
+
+# AWS credentials - ΠΟΤΕ στο git
+**/.aws/
+*.pem
+*.key
+
+# Ansible
+*.retry
+ansible/inventory/hosts
+
+# OS
+.DS_Store
+*.swp
