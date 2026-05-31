@@ -19,3 +19,6 @@ ansible/inventory/hosts
 # OS
 .DS_Store
 *.swp
+
+#Lambda
+*.zip

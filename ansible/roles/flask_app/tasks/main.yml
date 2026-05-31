@@ -1,0 +1,98 @@
+---
+- name: Install Python packages via dnf
+  ansible.builtin.dnf:
+    name:
+      - python3-flask
+      - python3-boto3
+    state: present
+  become: true
+
+- name: Create app directory
+  ansible.builtin.file:
+    path: /opt/flaskapp
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: "0755"
+  become: true
+
+- name: Get RDS credentials from Secrets Manager
+  ansible.builtin.shell: |
+    aws secretsmanager get-secret-value \
+      --secret-id "production/rds/mysql" \
+      --region eu-north-1 \
+      --query SecretString \
+      --output text
+  register: rds_secret_raw
+  no_log: true
+  become: false
+
+- name: Parse RDS credentials
+  ansible.builtin.set_fact:
+    rds_secret: "{{ rds_secret_raw.stdout | from_json }}"
+  no_log: true
+
+- name: Deploy Flask application
+  ansible.builtin.copy:
+    dest: /opt/flaskapp/app.py
+    content: |
+      from flask import Flask, jsonify
+      import boto3
+      import json
+
+      app = Flask(__name__)
+
+      def get_db_credentials():
+          client = boto3.client('secretsmanager', region_name='eu-north-1')
+          secret = client.get_secret_value(SecretId='production/rds/mysql')
+          return json.loads(secret['SecretString'])
+
+      @app.route('/health')
+      def health():
+          return jsonify({'status': 'healthy'}), 200
+
+      @app.route('/')
+      def index():
+          creds = get_db_credentials()
+          return jsonify({
+              'message': 'Secure Flask App running',
+              'db_host': creds.get('host'),
+              'db_name': creds.get('dbname')
+          }), 200
+
+      if __name__ == '__main__':
+          app.run(host='127.0.0.1', port=5000)
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"
+  become: true
+
+- name: Create systemd service for Flask
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/flaskapp.service
+    content: |
+      [Unit]
+      Description=Flask Application
+      After=network.target
+
+      [Service]
+      User=ec2-user
+      WorkingDirectory=/opt/flaskapp
+      ExecStart=/usr/bin/python3 /opt/flaskapp/app.py
+      Restart=always
+      RestartSec=3
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: "0644"
+  become: true
+  notify:
+    - reload systemd
+    - restart flaskapp
+
+- name: Enable and start Flask app
+  ansible.builtin.service:
+    name: flaskapp
+    state: started
+    enabled: true
+  become: true

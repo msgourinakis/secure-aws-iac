@@ -1,0 +1,13 @@
+plugin: amazon.aws.aws_ec2
+regions:
+  - eu-north-1
+filters:
+  tag:Environment: production
+  instance-state-name: running
+keyed_groups:
+  - key: tags.Name
+    prefix: tag
+hostnames:
+  - instance-id
+compose:
+  ansible_host: instance_id
