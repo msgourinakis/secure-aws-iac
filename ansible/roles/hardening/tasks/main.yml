@@ -48,12 +48,15 @@
   become: true
   notify: reload firewalld
 
-- name: Set proper permissions on /etc/crontab
+- name: Ensure /etc/crontab exists with correct permissions
   ansible.builtin.file:
     path: /etc/crontab
+    state: touch
     owner: root
     group: root
     mode: "0600"
+    modification_time: preserve
+    access_time: preserve
   become: true
 
 - name: Disable unused filesystems
