@@ -36,6 +36,8 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
+  map_public_ip_on_launch = false
+
   tags = {
     Name = "${var.environment}-private-subnet-${count.index + 1}"
     Tier = "private"

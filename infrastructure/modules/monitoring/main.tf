@@ -24,6 +24,28 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "cloudtrail" {
   }
 }
 
+resource "aws_s3_bucket_versioning" "cloudtrail" {
+  bucket = aws_s3_bucket.cloudtrail.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# S3 Object Lock Configuration for Compliance
+resource "aws_s3_bucket_object_lock_configuration" "cloudtrail" {
+  bucket = aws_s3_bucket.cloudtrail.id
+
+  rule {
+    default_retention {
+      mode = "COMPLIANCE"
+      days = 365
+    }
+  }
+
+  depends_on = [aws_s3_bucket_versioning.cloudtrail]
+  
+}
+
 # Bucket policy — Allow CloudTrail to write logs
 resource "aws_s3_bucket_policy" "cloudtrail" {
   bucket = aws_s3_bucket.cloudtrail.id

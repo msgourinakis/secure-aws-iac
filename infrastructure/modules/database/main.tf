@@ -79,7 +79,7 @@ resource "aws_db_instance" "main" {
 
   # Security
   publicly_accessible    = false
-  deletion_protection    = true
+  deletion_protection    = false # true
   skip_final_snapshot    = false
   final_snapshot_identifier = "${var.environment}-mysql-final-snapshot"
 

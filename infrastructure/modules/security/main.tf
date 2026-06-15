@@ -165,7 +165,7 @@ resource "aws_vpc_endpoint" "secretsmanager" {
   }
 }
 
-# VPC Endpoint — S3 (Gateway, δωρεάν)
+# VPC Endpoint — S3 (Gateway)
 resource "aws_vpc_endpoint" "s3" {
   vpc_id            = var.vpc_id
   service_name      = "com.amazonaws.${var.aws_region}.s3"
@@ -177,7 +177,7 @@ resource "aws_vpc_endpoint" "s3" {
   }
 }
 
-# IAM Role για EC2
+# IAM Role for EC2
 resource "aws_iam_role" "ec2" {
   name = "${var.environment}-ec2-role"
 

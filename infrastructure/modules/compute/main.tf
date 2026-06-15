@@ -92,7 +92,7 @@ resource "aws_lb" "app" {
   security_groups    = [var.alb_sg_id]
   subnets            = var.private_subnet_ids
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false # true
 
   tags = {
     Name = "${var.environment}-app-alb"
