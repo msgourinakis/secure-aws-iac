@@ -40,6 +40,8 @@ resource "aws_launch_template" "app" {
     enabled = true
   }
 
+  user_data = filebase64("${path.module}/setup_app.sh")
+/*
   user_data = base64encode(<<-EOF
     #!/bin/bash
     if ! rpm -q amazon-ssm-agent &>/dev/null; then
@@ -49,7 +51,7 @@ resource "aws_launch_template" "app" {
     systemctl start amazon-ssm-agent
   EOF
   )
-
+*/
   tag_specifications {
     resource_type = "instance"
     tags = {
@@ -70,7 +72,7 @@ resource "aws_autoscaling_group" "app" {
   vpc_zone_identifier = var.private_subnet_ids
   target_group_arns   = [aws_lb_target_group.app.arn]
   health_check_type   = "ELB"
-  health_check_grace_period = 1200
+  health_check_grace_period = 300
 
   min_size         = 2
   max_size         = 3

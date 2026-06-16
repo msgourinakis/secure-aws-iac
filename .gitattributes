@@ -1,0 +1,15 @@
+# Default
+* text=auto
+
+# Shell scripts - Always LF
+*.sh text eol=lf
+
+# Terraform files - Always LF  
+*.tf text eol=lf
+
+# Python files - Always LF
+*.py text eol=lf
+
+# YAML files - Always LF
+*.yml text eol=lf
+*.yaml text eol=lf
