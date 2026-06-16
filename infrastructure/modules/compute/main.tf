@@ -40,6 +40,16 @@ resource "aws_launch_template" "app" {
     enabled = true
   }
 
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    if ! rpm -q amazon-ssm-agent &>/dev/null; then
+      dnf install -y amazon-ssm-agent
+    fi
+    systemctl enable amazon-ssm-agent
+    systemctl start amazon-ssm-agent
+  EOF
+  )
+
   tag_specifications {
     resource_type = "instance"
     tags = {
@@ -59,7 +69,7 @@ resource "aws_autoscaling_group" "app" {
   name                = "${var.environment}-app-asg"
   vpc_zone_identifier = var.private_subnet_ids
   target_group_arns   = [aws_lb_target_group.app.arn]
-  health_check_type   = "EC2" #ELB
+  health_check_type   = "ELB"
   health_check_grace_period = 600
 
   min_size         = 1
@@ -113,9 +123,9 @@ resource "aws_lb_target_group" "app" {
     port                = "traffic-port"
     protocol            = "HTTP"
     healthy_threshold   = 2
-    unhealthy_threshold = 10 #3
-    timeout             = 10 #5
-    interval            = 60 #30
+    unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 30
     matcher             = "200"
   }
 
