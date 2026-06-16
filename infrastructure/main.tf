@@ -77,6 +77,13 @@ module "compute" {
   alb_sg_id                 = module.security.alb_sg_id
   ec2_sg_id                 = module.security.ec2_sg_id
   ec2_instance_profile_name = module.security.ec2_instance_profile_name
+
+  depends_on = [
+    module.networking,
+    module.security,
+    module.database,
+    module.monitoring
+  ]
 }
 
 module "cdn" {
