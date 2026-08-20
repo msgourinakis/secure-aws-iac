@@ -143,14 +143,17 @@ resource "aws_iam_role_policy" "rotation_lambda_secrets" {
   })
 }
 
+resource "local_file" "lambda_code" {
+  content  = file("${path.module}/rotation_lambda.py")
+  filename = "${path.module}/vendor_package/lambda_function.py"
+}
+
 # Lambda function for rotation
 data "archive_file" "rotation_lambda" {
   type        = "zip"
+  source_dir  = "${path.module}/vendor_package"
   output_path = "${path.module}/rotation_lambda.zip"
-  source {
-    content  = file("${path.module}/rotation_lambda.py")
-    filename = "lambda_function.py"
-  }
+  depends_on  = [local_file.lambda_code]
 }
 
 resource "aws_lambda_function" "rotation" {
