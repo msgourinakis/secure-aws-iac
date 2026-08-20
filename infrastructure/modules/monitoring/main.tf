@@ -3,6 +3,10 @@ resource "aws_s3_bucket" "cloudtrail" {
   bucket = "${var.environment}-cloudtrail-logs-${var.account_id}-${var.aws_region}-an"
   bucket_namespace = "account-regional"
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = {
     Name = "${var.environment}-cloudtrail-logs"
   }
