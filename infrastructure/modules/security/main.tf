@@ -55,19 +55,11 @@ resource "aws_security_group" "ec2" {
 }
 
 # Security Group for RDS
-# Accepts traffic only from EC2
+# Accepts traffic only from EC2 and Lambda
 resource "aws_security_group" "rds" {
   name        = "${var.environment}-rds-sg"
   description = "Security group for RDS - accepts traffic from EC2 only"
   vpc_id      = var.vpc_id
-
-  ingress {
-    description     = "MySQL from EC2 only"
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ec2.id]
-  }
 
   egress {
     description = "Allow all outbound"
@@ -80,6 +72,26 @@ resource "aws_security_group" "rds" {
   tags = {
     Name = "${var.environment}-rds-sg"
   }
+}
+
+resource "aws_security_group_rule" "rds_from_ec2" {
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.ec2.id
+  security_group_id        = aws_security_group.rds.id
+  description              = "MySQL from EC2 only"
+}
+
+resource "aws_security_group_rule" "rds_from_lambda" {
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.rds.id
+  security_group_id        = aws_security_group.rds.id
+  description              = "MySQL from rotation Lambda"
 }
 
 # Security Group for VPC Endpoints
